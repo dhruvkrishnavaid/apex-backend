@@ -1,23 +1,20 @@
 package com.apex.service;
 
-import java.text.Normalizer;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.apex.dto.request.CategoryRequests.CreateCategoryRequest;
 import com.apex.dto.request.CategoryRequests.UpdateCategoryRequest;
 import com.apex.dto.response.CategoryResponse;
-import com.apex.exception.DuplicateResourceException;
 import com.apex.exception.ResourceNotFoundException;
 import com.apex.mapper.CategoryMapper;
 import com.apex.model.Category;
 import com.apex.repository.CategoryRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.text.Normalizer;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +39,7 @@ public class CategoryService {
         .slug(slug)
         .description(request.description())
         .parent(parent)
+        .isActive(true)
         .build();
 
     return categoryMapper.toResponse(categoryRepository.save(category));
@@ -97,8 +95,8 @@ public class CategoryService {
         .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + id));
 
     if (category.getChildren() != null && !category.getChildren().isEmpty()) {
-      throw new DuplicateResourceException(
-          "Cannot delete category with subcategories. Delete or reassign subcategories first.");
+      throw new IllegalStateException(
+          "Cannot delete category with active subcategories. Delete or reassign subcategories first.");
     }
     categoryRepository.delete(category);
   }
@@ -114,6 +112,8 @@ public class CategoryService {
   }
 
   private String slugify(String input) {
+    if (input == null)
+      return "";
     String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
     return normalized.toLowerCase(Locale.ROOT)
         .replaceAll("[^a-z0-9\\s-]", "")

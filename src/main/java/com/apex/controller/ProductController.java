@@ -1,7 +1,14 @@
 package com.apex.controller;
 
-import java.util.UUID;
-
+import com.apex.dto.request.ProductRequests.CreateBarcodeRequest;
+import com.apex.dto.request.ProductRequests.CreateProductRequest;
+import com.apex.dto.request.ProductRequests.CreateVariantRequest;
+import com.apex.dto.response.ProductResponses.BarcodeResponse;
+import com.apex.dto.response.ProductResponses.ProductResponse;
+import com.apex.dto.response.ProductResponses.VariantResponse;
+import com.apex.service.ProductService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -16,16 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.apex.dto.request.ProductRequests.CreateBarcodeRequest;
-import com.apex.dto.request.ProductRequests.CreateProductRequest;
-import com.apex.dto.request.ProductRequests.CreateVariantRequest;
-import com.apex.dto.response.ProductResponses.BarcodeResponse;
-import com.apex.dto.response.ProductResponses.ProductResponse;
-import com.apex.dto.response.ProductResponses.VariantResponse;
-import com.apex.service.ProductService;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -37,8 +35,7 @@ public class ProductController {
   // ---------- Products ----------
 
   @PostMapping
-  public ResponseEntity<ProductResponse> createProduct(
-      @Valid @RequestBody CreateProductRequest request) {
+  public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(request));
   }
 
@@ -46,7 +43,7 @@ public class ProductController {
   public ResponseEntity<Page<ProductResponse>> listProducts(
       @RequestParam(required = false) UUID categoryId,
       @RequestParam(required = false) String keyword,
-      @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+      @PageableDefault(size = 20) Pageable pageable) {
     return ResponseEntity.ok(productService.listProducts(categoryId, keyword, pageable));
   }
 
@@ -72,8 +69,7 @@ public class ProductController {
   public ResponseEntity<VariantResponse> addVariant(
       @PathVariable UUID productId,
       @Valid @RequestBody CreateVariantRequest request) {
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(productService.addVariant(productId, request));
+    return ResponseEntity.status(HttpStatus.CREATED).body(productService.addVariant(productId, request));
   }
 
   @GetMapping("/{productId}/variants")
@@ -88,7 +84,7 @@ public class ProductController {
     return ResponseEntity.ok(productService.getVariantBySku(sku));
   }
 
-  // ---------- Barcodes ----------
+  // ---------- Barcodes & Hardware Scanners ----------
 
   @PostMapping("/variants/{variantId}/barcodes")
   public ResponseEntity<BarcodeResponse> addBarcode(

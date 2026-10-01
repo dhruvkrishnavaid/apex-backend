@@ -1,16 +1,5 @@
 package com.apex.service;
 
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.apex.dto.request.ProductRequests.CreateBarcodeRequest;
 import com.apex.dto.request.ProductRequests.CreateProductRequest;
 import com.apex.dto.request.ProductRequests.CreateVariantRequest;
@@ -30,8 +19,19 @@ import com.apex.repository.MediaAssetRepository;
 import com.apex.repository.ProductBarcodeRepository;
 import com.apex.repository.ProductRepository;
 import com.apex.repository.ProductVariantRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +59,7 @@ public class ProductService {
         .brand(request.brand())
         .unitOfMeasure(request.unitOfMeasure())
         .hasVariants(Boolean.TRUE.equals(request.hasVariants()))
+        .isActive(true)
         .build();
 
     product = productRepository.save(product);
@@ -67,7 +68,7 @@ public class ProductService {
       final Product savedProduct = product;
       List<ProductVariant> variants = request.variants().stream()
           .map(variantRequest -> buildVariant(savedProduct, variantRequest))
-          .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+          .collect(Collectors.toCollection(ArrayList::new));
       product.setVariants(variants);
       product = productRepository.save(product);
     }
@@ -98,7 +99,7 @@ public class ProductService {
     } else {
       page = productRepository.findAll(pageable);
     }
-    return page.map(ProductService.this::toFullResponse);
+    return page.map(this::toFullResponse);
   }
 
   @Transactional
@@ -119,7 +120,7 @@ public class ProductService {
 
   @Transactional(readOnly = true)
   public Page<VariantResponse> listVariants(UUID productId, Pageable pageable) {
-    findActiveProduct(productId); // ensure product exists
+    findActiveProduct(productId);
     return variantRepository.findByProductId(productId, pageable)
         .map(productMapper::toVariantResponse);
   }
@@ -153,7 +154,7 @@ public class ProductService {
     return productMapper.toVariantResponse(found.getVariant());
   }
 
-  // ---------- Helpers ----------
+  // ---------- Private Helpers ----------
 
   private Product findActiveProduct(UUID id) {
     Product product = productRepository.findById(id)
@@ -176,6 +177,7 @@ public class ProductService {
         .costPrice(request.costPrice())
         .retailPrice(request.retailPrice())
         .dimensions(request.dimensions())
+        .isActive(true)
         .build();
 
     if (request.barcodes() != null) {
@@ -199,7 +201,7 @@ public class ProductService {
     return ProductBarcode.builder()
         .barcode(request.barcode())
         .type(type)
-        .isPrimary(request.isPrimary() == null || request.isPrimary())
+        .isPrimary(request.isPrimary() != null ? request.isPrimary() : true)
         .build();
   }
 
@@ -225,6 +227,8 @@ public class ProductService {
   }
 
   private String slugify(String input) {
+    if (input == null)
+      return "";
     String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
     return normalized.toLowerCase(Locale.ROOT)
         .replaceAll("[^a-z0-9\\s-]", "")
