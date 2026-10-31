@@ -32,7 +32,7 @@ Delivered as 8 epics over 15 sprints; each sprint is committed to git as `Sprint
 | 10 | E5 | Suppliers and supplier catalog | Done |
 | 11 | E5 | Purchase orders and goods receipt | Done |
 | 12 | E6 | Customers and sales orders with stock reservation | Done |
-| 13 | E6 | Fulfilment (pick/pack/ship), cancellation, returns | Planned |
+| 13 | E6 | Fulfilment (pick/pack/ship), cancellation, returns | Done |
 | 14 | E7 | Reorder rules, low-stock alerts, notifications | Planned |
 | 15 | E8 | Reports, dashboard, audit log, final documentation | Planned |
 

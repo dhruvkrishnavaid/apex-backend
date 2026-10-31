@@ -33,6 +33,14 @@ public class OrderRequests {
       @DecimalMin(value = "0.0") @DecimalMax(value = "100.0") BigDecimal discountPercent) {
   }
 
+  /** Lines left out keep their current picked quantity; an empty body picks the whole order. */
+  public record PickRequest(List<@Valid PickLine> lines) {
+    public record PickLine(
+        @NotNull UUID lineId,
+        @NotNull @Min(value = 0, message = "Quantity cannot be negative") Integer quantity) {
+    }
+  }
+
   public record ShipOrderRequest(
       @Size(max = 100) String carrier,
       @Size(max = 100) String trackingNumber) {

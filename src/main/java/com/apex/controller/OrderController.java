@@ -19,7 +19,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.apex.dto.request.OrderRequests.CancelOrderRequest;
 import com.apex.dto.request.OrderRequests.CreateOrderRequest;
+import com.apex.dto.request.OrderRequests.CreateReturnRequest;
+import com.apex.dto.request.OrderRequests.PickRequest;
+import com.apex.dto.request.OrderRequests.ShipOrderRequest;
+import com.apex.dto.response.OrderResponses.ReturnResponse;
+import com.apex.service.FulfilmentService;
+import java.util.List;
+import java.util.stream.Collectors;
 import com.apex.dto.response.OrderResponses.OrderResponse;
 import com.apex.model.SalesOrder.Status;
 import com.apex.service.OrderService;
@@ -33,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
 
   private final OrderService orderService;
+  private final FulfilmentService fulfilmentService;
 
   @PostMapping
   @PreAuthorize("hasAuthority('order:create')")
@@ -57,5 +66,62 @@ public class OrderController {
   @PreAuthorize("hasAuthority('order:read')")
   public ResponseEntity<OrderResponse> get(@PathVariable UUID id) {
     return ResponseEntity.ok(orderService.get(id));
+  }
+
+  // ---------- Fulfilment ----------
+
+  @PostMapping("/{id}/pick")
+  @PreAuthorize("hasAuthority('order:update')")
+  public ResponseEntity<OrderResponse> pick(
+      @PathVariable UUID id,
+      @Valid @RequestBody(required = false) PickRequest request) {
+    java.util.Map<UUID, Integer> picks = request == null || request.lines() == null ? null
+        : request.lines().stream().collect(Collectors.toMap(
+            PickRequest.PickLine::lineId, PickRequest.PickLine::quantity, Integer::sum));
+    return ResponseEntity.ok(fulfilmentService.pick(id, picks));
+  }
+
+  @PostMapping("/{id}/pack")
+  @PreAuthorize("hasAuthority('order:update')")
+  public ResponseEntity<OrderResponse> pack(@PathVariable UUID id) {
+    return ResponseEntity.ok(fulfilmentService.pack(id));
+  }
+
+  @PostMapping("/{id}/ship")
+  @PreAuthorize("hasAuthority('order:update')")
+  public ResponseEntity<OrderResponse> ship(
+      @PathVariable UUID id,
+      @Valid @RequestBody(required = false) ShipOrderRequest request) {
+    return ResponseEntity.ok(fulfilmentService.ship(id, request));
+  }
+
+  @PostMapping("/{id}/deliver")
+  @PreAuthorize("hasAuthority('order:update')")
+  public ResponseEntity<OrderResponse> deliver(@PathVariable UUID id) {
+    return ResponseEntity.ok(fulfilmentService.deliver(id));
+  }
+
+  @PostMapping("/{id}/cancel")
+  @PreAuthorize("hasAuthority('order:cancel')")
+  public ResponseEntity<OrderResponse> cancel(
+      @PathVariable UUID id,
+      @Valid @RequestBody(required = false) CancelOrderRequest request) {
+    return ResponseEntity.ok(fulfilmentService.cancel(id, request == null ? null : request.reason()));
+  }
+
+  // ---------- Returns ----------
+
+  @PostMapping("/{id}/returns")
+  @PreAuthorize("hasAuthority('order:update')")
+  public ResponseEntity<ReturnResponse> createReturn(
+      @PathVariable UUID id,
+      @Valid @RequestBody CreateReturnRequest request) {
+    return ResponseEntity.status(HttpStatus.CREATED).body(fulfilmentService.createReturn(id, request));
+  }
+
+  @GetMapping("/{id}/returns")
+  @PreAuthorize("hasAuthority('order:read')")
+  public ResponseEntity<List<ReturnResponse>> listReturns(@PathVariable UUID id) {
+    return ResponseEntity.ok(fulfilmentService.listReturns(id));
   }
 }
