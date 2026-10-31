@@ -52,7 +52,7 @@ public class ProductVariant {
   private String sku;
 
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "variant_attributes", columnDefinition = "jsonb")
+  @Column(name = "variant_attributes")
   private Map<String, Object> variantAttributes;
 
   @Column(name = "cost_price", precision = 12, scale = 2, nullable = false)
@@ -62,11 +62,11 @@ public class ProductVariant {
   private BigDecimal retailPrice;
 
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(columnDefinition = "jsonb")
+  @Column
   private Map<String, Object> dimensions;
 
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(columnDefinition = "jsonb")
+  @Column
   private Map<String, Object> weight;
 
   @Builder.Default

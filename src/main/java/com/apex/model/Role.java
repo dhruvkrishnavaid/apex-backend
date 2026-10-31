@@ -38,7 +38,7 @@ public class Role {
   private String name;
 
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(columnDefinition = "jsonb")
+  @Column
   private List<String> permissions;
 
   @Column(name = "created_at", nullable = false, updatable = false)

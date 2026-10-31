@@ -7,6 +7,7 @@ import com.apex.exception.ResourceNotFoundException;
 import com.apex.mapper.CategoryMapper;
 import com.apex.model.Category;
 import com.apex.repository.CategoryRepository;
+import com.apex.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class CategoryService {
 
   private final CategoryRepository categoryRepository;
   private final CategoryMapper categoryMapper;
+  private final ProductRepository productRepository;
 
   @Transactional
   public CategoryResponse createCategory(CreateCategoryRequest request) {
@@ -97,6 +99,9 @@ public class CategoryService {
     if (category.getChildren() != null && !category.getChildren().isEmpty()) {
       throw new IllegalStateException(
           "Cannot delete category with active subcategories. Delete or reassign subcategories first.");
+    }
+    if (productRepository.existsByCategoryId(id)) {
+      throw new IllegalStateException("Cannot delete a category that has products (including archived ones). Deactivate it instead.");
     }
     categoryRepository.delete(category);
   }

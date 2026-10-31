@@ -22,6 +22,7 @@ import com.apex.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +56,7 @@ public class ProductService {
         .category(category)
         .name(request.name())
         .slug(generateUniqueSlug(request.name()))
-        .description(request.description())
+        .description(request.description() != null ? request.description() : "")
         .brand(request.brand())
         .unitOfMeasure(request.unitOfMeasure())
         .hasVariants(Boolean.TRUE.equals(request.hasVariants()))
@@ -91,15 +92,17 @@ public class ProductService {
 
   @Transactional(readOnly = true)
   public Page<ProductResponse> listProducts(UUID categoryId, String keyword, Pageable pageable) {
-    Page<Product> page;
-    if (keyword != null && !keyword.isBlank()) {
-      page = productRepository.searchProducts(keyword, pageable);
-    } else if (categoryId != null) {
-      page = productRepository.findByCategoryIdAndDeletedAtIsNull(categoryId, pageable);
-    } else {
-      page = productRepository.findAll(pageable);
+    Specification<Product> spec = (root, query, cb) -> cb.isNull(root.get("deletedAt"));
+    if (categoryId != null) {
+      spec = spec.and((root, query, cb) -> cb.equal(root.get("category").get("id"), categoryId));
     }
-    return page.map(this::toFullResponse);
+    if (keyword != null && !keyword.isBlank()) {
+      String pattern = "%" + keyword.trim().toLowerCase(Locale.ROOT) + "%";
+      spec = spec.and((root, query, cb) -> cb.or(
+          cb.like(cb.lower(root.get("name")), pattern),
+          cb.like(cb.lower(root.get("brand")), pattern)));
+    }
+    return productRepository.findAll(spec, pageable).map(this::toFullResponse);
   }
 
   @Transactional
@@ -142,6 +145,12 @@ public class ProductService {
     validateBarcodeUniqueness(request.barcode());
 
     ProductBarcode barcode = buildBarcode(request);
+    if (request.isPrimary() == null) {
+      barcode.setIsPrimary(variant.getBarcodes().isEmpty());
+    }
+    if (Boolean.TRUE.equals(barcode.getIsPrimary())) {
+      variant.getBarcodes().forEach(existing -> existing.setIsPrimary(false));
+    }
     variant.addBarcode(barcode);
     variantRepository.save(variant);
     return productMapper.toBarcodeResponse(barcode);
@@ -220,7 +229,7 @@ public class ProductService {
     String base = slugify(name);
     String slug = base;
     int counter = 1;
-    while (productRepository.existsBySlugAndDeletedAtIsNull(slug)) {
+    while (productRepository.existsBySlug(slug)) {
       slug = base + "-" + counter++;
     }
     return slug;
