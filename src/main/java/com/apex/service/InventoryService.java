@@ -46,6 +46,7 @@ public class InventoryService {
   private final ProductVariantRepository variantRepository;
   private final WarehouseRepository warehouseRepository;
   private final StorageLocationRepository locationRepository;
+  private final AlertService alertService;
 
   // ---------- Queries ----------
 
@@ -169,7 +170,9 @@ public class InventoryService {
     }
     level.setQuantityOnHand(newOnHand);
     record(level, type, delta, referenceType, referenceId, reason);
-    return stockLevelRepository.save(level);
+    level = stockLevelRepository.saveAndFlush(level);
+    alertService.evaluate(variantId, warehouseId);
+    return level;
   }
 
   /** Reserves stock for an order or outgoing transfer. */
@@ -183,7 +186,8 @@ public class InventoryService {
           + ", requested " + quantity);
     }
     level.setQuantityReserved(level.getQuantityReserved() + quantity);
-    stockLevelRepository.save(level);
+    stockLevelRepository.saveAndFlush(level);
+    alertService.evaluate(variantId, warehouseId);
   }
 
   @Transactional(propagation = Propagation.MANDATORY)
@@ -195,7 +199,8 @@ public class InventoryService {
           + level.getQuantityReserved() + " reserved");
     }
     level.setQuantityReserved(level.getQuantityReserved() - quantity);
-    stockLevelRepository.save(level);
+    stockLevelRepository.saveAndFlush(level);
+    alertService.evaluate(variantId, warehouseId);
   }
 
   /** Removes previously reserved stock from the warehouse (shipment / transfer dispatch). */
@@ -211,7 +216,8 @@ public class InventoryService {
     level.setQuantityReserved(level.getQuantityReserved() - quantity);
     level.setQuantityOnHand(level.getQuantityOnHand() - quantity);
     record(level, type, -quantity, referenceType, referenceId, reason);
-    stockLevelRepository.save(level);
+    stockLevelRepository.saveAndFlush(level);
+    alertService.evaluate(variantId, warehouseId);
   }
 
   // ---------- Helpers ----------
