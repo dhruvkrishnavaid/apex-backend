@@ -21,12 +21,40 @@ public class ProductRequests {
       List<CreateVariantRequest> variants) {
   }
 
+  public record UpdateProductRequest(
+      @NotNull(message = "Category ID is required") UUID categoryId,
+      @NotBlank(message = "Product name is required") String name,
+      String description,
+      String brand,
+      @NotBlank(message = "Unit of measure is required") String unitOfMeasure,
+      Boolean isActive) {
+  }
+
+  public record UpdateVariantRequest(
+      Map<String, Object> variantAttributes,
+      @NotNull(message = "Cost price is required") @DecimalMin(value = "0.0", inclusive = false, message = "Cost price must be greater than 0") BigDecimal costPrice,
+      @NotNull(message = "Retail price is required") @DecimalMin(value = "0.0", inclusive = false, message = "Retail price must be greater than 0") BigDecimal retailPrice,
+      Map<String, Object> dimensions,
+      Map<String, Object> weight,
+      Boolean isActive) {
+  }
+
+  public record CreateMediaRequest(
+      UUID variantId,
+      @NotBlank(message = "URL is required") String url,
+      @NotBlank(message = "File name is required") String fileName,
+      @NotBlank(message = "MIME type is required") String mimeType,
+      Boolean isPrimary,
+      Integer sortOrder) {
+  }
+
   public record CreateVariantRequest(
       @NotBlank(message = "SKU is required") String sku,
       Map<String, Object> variantAttributes,
       @NotNull(message = "Cost price is required") @DecimalMin(value = "0.0", inclusive = false, message = "Cost price must be greater than 0") BigDecimal costPrice,
       @NotNull(message = "Retail price is required") @DecimalMin(value = "0.0", inclusive = false, message = "Retail price must be greater than 0") BigDecimal retailPrice,
       Map<String, Object> dimensions,
+      Map<String, Object> weight,
       List<CreateBarcodeRequest> barcodes) {
   }
 

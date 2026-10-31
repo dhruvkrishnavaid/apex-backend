@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apex.dto.request.CategoryRequests.CreateCategoryRequest;
+import com.apex.dto.request.CategoryRequests.MoveCategoryRequest;
 import com.apex.dto.request.CategoryRequests.UpdateCategoryRequest;
 import com.apex.dto.response.CategoryResponse;
 import com.apex.service.CategoryService;
@@ -67,6 +69,14 @@ public class CategoryController {
       @PathVariable UUID id,
       @Valid @RequestBody UpdateCategoryRequest request) {
     return ResponseEntity.ok(categoryService.updateCategory(id, request));
+  }
+
+  @PatchMapping("/{id}/parent")
+  @PreAuthorize("hasAuthority('category:update')")
+  public ResponseEntity<CategoryResponse> moveCategory(
+      @PathVariable UUID id,
+      @RequestBody MoveCategoryRequest request) {
+    return ResponseEntity.ok(categoryService.moveCategory(id, request.parentId()));
   }
 
   @DeleteMapping("/{id}")

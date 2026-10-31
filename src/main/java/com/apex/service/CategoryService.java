@@ -63,6 +63,25 @@ public class CategoryService {
     return categoryMapper.toResponse(categoryRepository.save(category));
   }
 
+  @Transactional
+  public CategoryResponse moveCategory(UUID id, UUID newParentId) {
+    Category category = categoryRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + id));
+
+    Category newParent = null;
+    if (newParentId != null) {
+      newParent = categoryRepository.findById(newParentId)
+          .orElseThrow(() -> new ResourceNotFoundException("Parent category not found: " + newParentId));
+      for (Category node = newParent; node != null; node = node.getParent()) {
+        if (node.getId().equals(id)) {
+          throw new IllegalArgumentException("A category cannot be moved under itself or one of its descendants");
+        }
+      }
+    }
+    category.setParent(newParent);
+    return categoryMapper.toResponse(categoryRepository.save(category));
+  }
+
   @Transactional(readOnly = true)
   public CategoryResponse getCategory(UUID id) {
     Category category = categoryRepository.findById(id)

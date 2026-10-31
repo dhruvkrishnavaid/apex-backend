@@ -1,6 +1,7 @@
 package com.apex.mapper;
 
 import com.apex.dto.response.ProductResponses.BarcodeResponse;
+import com.apex.dto.response.ProductResponses.MediaResponse;
 import com.apex.dto.response.ProductResponses.ProductResponse;
 import com.apex.dto.response.ProductResponses.VariantResponse;
 import com.apex.model.MediaAsset;
@@ -59,9 +60,22 @@ public class ProductMapper {
         variant.getCostPrice(),
         variant.getRetailPrice(),
         variant.getDimensions(),
+        variant.getWeight(),
         variant.getIsActive(),
         barcodes,
         variant.getCreatedAt());
+  }
+
+  public MediaResponse toMediaResponse(MediaAsset asset) {
+    return new MediaResponse(
+        asset.getId(),
+        asset.getProduct() != null ? asset.getProduct().getId() : null,
+        asset.getVariant() != null ? asset.getVariant().getId() : null,
+        asset.getUrl(),
+        asset.getFileName(),
+        asset.getMimeType(),
+        asset.getIsPrimary(),
+        asset.getSortOrder());
   }
 
   public BarcodeResponse toBarcodeResponse(ProductBarcode barcode) {

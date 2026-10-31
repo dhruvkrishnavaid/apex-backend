@@ -32,9 +32,21 @@ public class ProductResponses {
       BigDecimal costPrice,
       BigDecimal retailPrice,
       Map<String, Object> dimensions,
+      Map<String, Object> weight,
       Boolean isActive,
       List<BarcodeResponse> barcodes,
       LocalDateTime createdAt) {
+  }
+
+  public record MediaResponse(
+      UUID id,
+      UUID productId,
+      UUID variantId,
+      String url,
+      String fileName,
+      String mimeType,
+      Boolean isPrimary,
+      Integer sortOrder) {
   }
 
   public record BarcodeResponse(
