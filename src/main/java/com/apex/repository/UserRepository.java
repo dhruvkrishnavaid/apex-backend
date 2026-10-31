@@ -12,6 +12,11 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
+  long countByRoleIdAndDeletedAtIsNull(UUID roleId);
+
+  @Query(value = "SELECT u FROM User u JOIN FETCH u.role WHERE u.deletedAt IS NULL", countQuery = "SELECT COUNT(u) FROM User u WHERE u.deletedAt IS NULL")
+  Page<User> findAllActiveWithRole(Pageable pageable);
+
   Optional<User> findByEmailAndDeletedAtIsNull(String email);
 
   boolean existsByEmailAndDeletedAtIsNull(String email);

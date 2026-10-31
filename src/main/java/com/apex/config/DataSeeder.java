@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.apex.model.Role;
 import com.apex.model.User;
 import com.apex.repository.RoleRepository;
+import com.apex.security.Permissions;
 import com.apex.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -38,34 +39,10 @@ public class DataSeeder implements CommandLineRunner {
   @Override
   @Transactional
   public void run(String... args) {
-    seedRole("ADMIN", List.of(
-        "user:create", "user:read", "user:update", "user:delete",
-        "role:read", "role:manage",
-        "category:create", "category:read", "category:update", "category:delete",
-        "product:create", "product:read", "product:update", "product:delete",
-        "inventory:read", "inventory:adjust",
-        "order:create", "order:read", "order:update", "order:cancel",
-        "supplier:create", "supplier:read", "supplier:update", "supplier:delete",
-        "warehouse:create", "warehouse:read", "warehouse:update", "warehouse:delete"));
-
-    seedRole("MANAGER", List.of(
-        "category:create", "category:read", "category:update",
-        "product:create", "product:read", "product:update",
-        "inventory:read", "inventory:adjust",
-        "order:read", "order:update",
-        "supplier:create", "supplier:read", "supplier:update",
-        "warehouse:read"));
-
-    seedRole("WAREHOUSE_STAFF", List.of(
-        "category:read", "product:read",
-        "inventory:read", "inventory:adjust",
-        "order:read", "order:update",
-        "warehouse:read"));
-
-    seedRole("CASHIER", List.of(
-        "category:read", "product:read",
-        "inventory:read",
-        "order:create", "order:read"));
+    seedRole("ADMIN", Permissions.admin());
+    seedRole("MANAGER", Permissions.manager());
+    seedRole("WAREHOUSE_STAFF", Permissions.warehouseStaff());
+    seedRole("CASHIER", Permissions.cashier());
 
     seedAdminUser();
   }
