@@ -34,7 +34,7 @@ Delivered as 8 epics over 15 sprints; each sprint is committed to git as `Sprint
 | 12 | E6 | Customers and sales orders with stock reservation | Done |
 | 13 | E6 | Fulfilment (pick/pack/ship), cancellation, returns | Done |
 | 14 | E7 | Reorder rules, low-stock alerts, notifications | Done |
-| 15 | E8 | Reports, dashboard, audit log, final documentation | Planned |
+| 15 | E8 | Reports, dashboard, audit log, final documentation | Done |
 
 ## Sprint 4 report (stabilisation)
 

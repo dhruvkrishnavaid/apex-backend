@@ -83,6 +83,7 @@ class SecurityAndCatalogTests extends IntegrationTest {
     deleteAs(admin, "/api/v1/products/" + productId).andExpect(status().isNoContent());
     getAs(admin, "/api/v1/products/" + productId).andExpect(status().isNotFound());
     getAs(admin, "/api/v1/products?categoryId=" + categoryId).andExpect(jsonPath("$.content.length()").value(0));
+    getAs(admin, "/api/v1/products?categoryId=" + categoryId).andExpect(jsonPath("$.page.totalElements").value(0));
     // archived products still reference the category, so it can only be deactivated
     deleteAs(admin, "/api/v1/categories/" + categoryId).andExpect(status().isConflict());
     putAs(admin, "/api/v1/categories/" + categoryId, "{\"name\":\"Retired\",\"isActive\":false}")
