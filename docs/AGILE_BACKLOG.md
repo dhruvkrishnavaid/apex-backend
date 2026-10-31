@@ -29,7 +29,7 @@ Delivered as 8 epics over 15 sprints; each sprint is committed to git as `Sprint
 | 7 | E3 | Warehouses and storage locations | Done |
 | 8 | E3 | Stock levels, adjustments, movement ledger | Done |
 | 9 | E4 | Stock transfers and reservations | Done |
-| 10 | E5 | Suppliers and supplier catalog | Planned |
+| 10 | E5 | Suppliers and supplier catalog | Done |
 | 11 | E5 | Purchase orders and goods receipt | Planned |
 | 12 | E6 | Customers and sales orders with stock reservation | Planned |
 | 13 | E6 | Fulfilment (pick/pack/ship), cancellation, returns | Planned |
