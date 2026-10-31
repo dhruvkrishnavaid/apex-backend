@@ -13,6 +13,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
 
   boolean existsBySlug(String slug);
 
+  long countByDeletedAtIsNullAndIsActiveTrue();
+
   /** Includes soft-deleted products, which still reference the category through a foreign key. */
   boolean existsByCategoryId(UUID categoryId);
 

@@ -38,4 +38,22 @@ public interface StockLevelRepository extends JpaRepository<StockLevel, UUID>, J
   long totalAvailable(@Param("variantId") UUID variantId);
 
   Page<StockLevel> findByWarehouseId(UUID warehouseId, Pageable pageable);
+
+  @Query("SELECT s FROM StockLevel s JOIN FETCH s.variant v JOIN FETCH v.product JOIN FETCH s.warehouse "
+      + "WHERE s.quantityOnHand > 0 ORDER BY v.sku")
+  List<StockLevel> findAllInStock();
+
+  @Query("SELECT s FROM StockLevel s JOIN FETCH s.variant v JOIN FETCH v.product JOIN FETCH s.warehouse w "
+      + "WHERE s.quantityOnHand > 0 AND w.id = :warehouseId ORDER BY v.sku")
+  List<StockLevel> findInStockByWarehouse(@Param("warehouseId") UUID warehouseId);
+
+  @Query("SELECT s FROM StockLevel s JOIN FETCH s.variant v JOIN FETCH v.product JOIN FETCH s.warehouse w "
+      + "WHERE (s.quantityOnHand - s.quantityReserved) <= :threshold AND v.isActive = true ORDER BY (s.quantityOnHand - s.quantityReserved), v.sku")
+  List<StockLevel> findAtOrBelowAvailable(@Param("threshold") int threshold);
+
+  @Query("SELECT COALESCE(SUM(s.quantityOnHand), 0) FROM StockLevel s")
+  long totalUnitsOnHand();
+
+  @Query("SELECT COALESCE(SUM(s.quantityOnHand * v.costPrice), 0) FROM StockLevel s JOIN s.variant v")
+  java.math.BigDecimal totalCostValue();
 }

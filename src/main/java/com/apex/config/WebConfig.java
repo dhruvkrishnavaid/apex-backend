@@ -10,10 +10,23 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
-public class WebConfig {
+public class WebConfig implements WebMvcConfigurer {
+
+  private final AuditInterceptor auditInterceptor;
+
+  public WebConfig(AuditInterceptor auditInterceptor) {
+    this.auditInterceptor = auditInterceptor;
+  }
+
+  @Override
+  public void addInterceptors(InterceptorRegistry registry) {
+    registry.addInterceptor(auditInterceptor).addPathPatterns("/api/**");
+  }
 
   @Bean
   CorsConfigurationSource corsConfigurationSource(

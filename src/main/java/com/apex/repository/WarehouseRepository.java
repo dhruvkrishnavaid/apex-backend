@@ -13,6 +13,8 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, UUID> {
 
   boolean existsByCode(String code);
 
+  long countByIsActiveTrue();
+
   Optional<Warehouse> findByCode(String code);
 
   Page<Warehouse> findByIsActive(Boolean isActive, Pageable pageable);
