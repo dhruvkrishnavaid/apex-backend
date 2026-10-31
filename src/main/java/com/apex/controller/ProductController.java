@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,11 +36,13 @@ public class ProductController {
   // ---------- Products ----------
 
   @PostMapping
+  @PreAuthorize("hasAuthority('product:create')")
   public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(request));
   }
 
   @GetMapping
+  @PreAuthorize("hasAuthority('product:read')")
   public ResponseEntity<Page<ProductResponse>> listProducts(
       @RequestParam(required = false) UUID categoryId,
       @RequestParam(required = false) String keyword,
@@ -48,16 +51,19 @@ public class ProductController {
   }
 
   @GetMapping("/{id}")
+  @PreAuthorize("hasAuthority('product:read')")
   public ResponseEntity<ProductResponse> getProduct(@PathVariable UUID id) {
     return ResponseEntity.ok(productService.getProduct(id));
   }
 
   @GetMapping("/slug/{slug}")
+  @PreAuthorize("hasAuthority('product:read')")
   public ResponseEntity<ProductResponse> getProductBySlug(@PathVariable String slug) {
     return ResponseEntity.ok(productService.getProductBySlug(slug));
   }
 
   @DeleteMapping("/{id}")
+  @PreAuthorize("hasAuthority('product:delete')")
   public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
     productService.deleteProduct(id);
     return ResponseEntity.noContent().build();
@@ -66,6 +72,7 @@ public class ProductController {
   // ---------- Variants ----------
 
   @PostMapping("/{productId}/variants")
+  @PreAuthorize("hasAuthority('product:update')")
   public ResponseEntity<VariantResponse> addVariant(
       @PathVariable UUID productId,
       @Valid @RequestBody CreateVariantRequest request) {
@@ -73,6 +80,7 @@ public class ProductController {
   }
 
   @GetMapping("/{productId}/variants")
+  @PreAuthorize("hasAuthority('product:read')")
   public ResponseEntity<Page<VariantResponse>> listVariants(
       @PathVariable UUID productId,
       @PageableDefault(size = 20) Pageable pageable) {
@@ -80,6 +88,7 @@ public class ProductController {
   }
 
   @GetMapping("/variants/sku/{sku}")
+  @PreAuthorize("hasAuthority('product:read')")
   public ResponseEntity<VariantResponse> getVariantBySku(@PathVariable String sku) {
     return ResponseEntity.ok(productService.getVariantBySku(sku));
   }
@@ -87,6 +96,7 @@ public class ProductController {
   // ---------- Barcodes & Hardware Scanners ----------
 
   @PostMapping("/variants/{variantId}/barcodes")
+  @PreAuthorize("hasAuthority('product:update')")
   public ResponseEntity<BarcodeResponse> addBarcode(
       @PathVariable UUID variantId,
       @Valid @RequestBody CreateBarcodeRequest request) {
@@ -94,6 +104,7 @@ public class ProductController {
   }
 
   @GetMapping("/barcodes/{barcode}")
+  @PreAuthorize("hasAuthority('product:read')")
   public ResponseEntity<VariantResponse> lookupByBarcode(@PathVariable String barcode) {
     return ResponseEntity.ok(productService.lookupByBarcode(barcode));
   }

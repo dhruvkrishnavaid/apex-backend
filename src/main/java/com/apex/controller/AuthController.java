@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +31,7 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/register")
+  @PreAuthorize("hasAuthority('user:create')")
   public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
   }
@@ -49,7 +52,13 @@ public class AuthController {
     return ResponseEntity.noContent().build();
   }
 
+  @GetMapping("/me")
+  public ResponseEntity<UserResponse> me(Authentication authentication) {
+    return ResponseEntity.ok(authService.getUserById(UUID.fromString(authentication.getName())));
+  }
+
   @GetMapping("/users/{id}")
+  @PreAuthorize("hasAuthority('user:read') or #id.toString() == authentication.name")
   public ResponseEntity<UserResponse> getUser(@PathVariable UUID id) {
     return ResponseEntity.ok(authService.getUserById(id));
   }

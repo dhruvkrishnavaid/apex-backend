@@ -48,7 +48,8 @@ public class AuthService {
 
   @Transactional
   public AuthResponse register(RegisterRequest request) {
-    if (userRepository.existsByEmailAndDeletedAtIsNull(request.email())) {
+    String email = normalizeEmail(request.email());
+    if (userRepository.existsByEmailAndDeletedAtIsNull(email)) {
       throw new DuplicateResourceException("A user with this email already exists");
     }
 
@@ -58,7 +59,7 @@ public class AuthService {
     User user = User.builder()
         .firstName(request.firstName())
         .lastName(request.lastName())
-        .email(request.email())
+        .email(email)
         .passwordHash(passwordEncoder.encode(request.password()))
         .role(role)
         .build();
@@ -69,7 +70,7 @@ public class AuthService {
 
   @Transactional
   public AuthResponse login(LoginRequest request) {
-    User user = userRepository.findByEmailAndDeletedAtIsNull(request.email())
+    User user = userRepository.findByEmailAndDeletedAtIsNull(normalizeEmail(request.email()))
         .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
     if (!Boolean.TRUE.equals(user.getIsActive())) {
@@ -99,6 +100,10 @@ public class AuthService {
 
     User user = userRepository.findByIdWithRole(stored.getUser().getId())
         .orElseThrow(() -> new UnauthorizedException("User no longer exists"));
+
+    if (!Boolean.TRUE.equals(user.getIsActive())) {
+      throw new UnauthorizedException("Account is deactivated");
+    }
 
     return issueTokens(user);
   }
@@ -131,6 +136,10 @@ public class AuthService {
 
     return new AuthResponse(accessToken, refreshToken, jwtService.getTtlSeconds(),
         userMapper.toResponse(user));
+  }
+
+  private String normalizeEmail(String email) {
+    return email.trim().toLowerCase(java.util.Locale.ROOT);
   }
 
   private String generateOpaqueToken() {
