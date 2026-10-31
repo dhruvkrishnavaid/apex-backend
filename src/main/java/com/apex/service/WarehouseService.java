@@ -18,6 +18,7 @@ import com.apex.exception.DuplicateResourceException;
 import com.apex.exception.ResourceNotFoundException;
 import com.apex.model.StorageLocation;
 import com.apex.model.Warehouse;
+import com.apex.repository.StockLevelRepository;
 import com.apex.repository.StorageLocationRepository;
 import com.apex.repository.WarehouseRepository;
 
@@ -29,6 +30,7 @@ public class WarehouseService {
 
   private final WarehouseRepository warehouseRepository;
   private final StorageLocationRepository locationRepository;
+  private final StockLevelRepository stockLevelRepository;
 
   @Transactional
   public WarehouseResponse createWarehouse(CreateWarehouseRequest request) {
@@ -73,6 +75,9 @@ public class WarehouseService {
     warehouse.setCountry(request.country());
     warehouse.setContactPhone(request.contactPhone());
     if (request.isActive() != null) {
+      if (!request.isActive()) {
+        requireNoStock(id);
+      }
       warehouse.setIsActive(request.isActive());
     }
     return toResponse(warehouseRepository.save(warehouse));
@@ -82,6 +87,7 @@ public class WarehouseService {
   @Transactional
   public void deactivateWarehouse(UUID id) {
     Warehouse warehouse = find(id);
+    requireNoStock(id);
     warehouse.setIsActive(false);
     warehouseRepository.save(warehouse);
   }
@@ -142,6 +148,12 @@ public class WarehouseService {
       throw new IllegalStateException("Warehouse is inactive: " + warehouse.getCode());
     }
     return warehouse;
+  }
+
+  private void requireNoStock(UUID warehouseId) {
+    if (stockLevelRepository.existsByWarehouseIdAndQuantityOnHandGreaterThan(warehouseId, 0)) {
+      throw new IllegalStateException("Warehouse still holds stock. Transfer or write it off before deactivating.");
+    }
   }
 
   private Warehouse find(UUID id) {

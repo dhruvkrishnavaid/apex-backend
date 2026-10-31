@@ -27,7 +27,7 @@ Delivered as 8 epics over 15 sprints; each sprint is committed to git as `Sprint
 | 5 | E1 | Catalog completion: update product/variant, media, barcode removal, category move | Done |
 | 6 | E2 | User and role management, password change | Done |
 | 7 | E3 | Warehouses and storage locations | Done |
-| 8 | E3 | Stock levels, adjustments, movement ledger | Planned |
+| 8 | E3 | Stock levels, adjustments, movement ledger | Done |
 | 9 | E4 | Stock transfers and reservations | Planned |
 | 10 | E5 | Suppliers and supplier catalog | Planned |
 | 11 | E5 | Purchase orders and goods receipt | Planned |

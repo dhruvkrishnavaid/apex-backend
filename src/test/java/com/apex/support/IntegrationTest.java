@@ -90,4 +90,46 @@ public abstract class IntegrationTest {
   protected static String unique(String prefix) {
     return prefix + "-" + UUID.randomUUID().toString().substring(0, 8);
   }
+
+  // ---------- fixtures ----------
+
+  protected String newCategory(String token) throws Exception {
+    return read(postAs(token, "/api/v1/categories", "{\"name\":\"" + unique("Cat") + "\"}"), "$.id");
+  }
+
+  /** Creates a product with one variant and returns the variant id. */
+  protected String newVariant(String token) throws Exception {
+    return newVariant(token, "1.00", "2.00");
+  }
+
+  protected String newVariant(String token, String cost, String retail) throws Exception {
+    var created = postAs(token, "/api/v1/products", """
+        {"categoryId":"%s","name":"Item %s","unitOfMeasure":"piece",
+         "variants":[{"sku":"%s","costPrice":%s,"retailPrice":%s}]}"""
+        .formatted(newCategory(token), unique("p"), unique("SKU"), cost, retail));
+    return read(created, "$.variants[0].id");
+  }
+
+  protected String newWarehouse(String token) throws Exception {
+    return read(postAs(token, "/api/v1/warehouses", "{\"code\":\"" + unique("wh") + "\",\"name\":\"WH\"}"), "$.id");
+  }
+
+  protected void addStock(String token, String variantId, String warehouseId, int qty) throws Exception {
+    postAs(token, "/api/v1/inventory/adjustments", """
+        {"variantId":"%s","warehouseId":"%s","quantityChange":%d,"reason":"test stock"}"""
+        .formatted(variantId, warehouseId, qty));
+  }
+
+  protected int onHand(String token, String variantId, String warehouseId) throws Exception {
+    var r = getAs(token, "/api/v1/inventory?variantId=" + variantId + "&warehouseId=" + warehouseId);
+    String body = r.andReturn().getResponse().getContentAsString();
+    java.util.List<Integer> v = JsonPath.read(body, "$.content[*].quantityOnHand");
+    return v.isEmpty() ? 0 : v.get(0);
+  }
+
+  protected int reserved(String token, String variantId, String warehouseId) throws Exception {
+    var r = getAs(token, "/api/v1/inventory?variantId=" + variantId + "&warehouseId=" + warehouseId);
+    java.util.List<Integer> v = JsonPath.read(r.andReturn().getResponse().getContentAsString(), "$.content[*].quantityReserved");
+    return v.isEmpty() ? 0 : v.get(0);
+  }
 }
