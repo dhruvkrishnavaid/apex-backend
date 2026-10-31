@@ -28,7 +28,7 @@ Delivered as 8 epics over 15 sprints; each sprint is committed to git as `Sprint
 | 6 | E2 | User and role management, password change | Done |
 | 7 | E3 | Warehouses and storage locations | Done |
 | 8 | E3 | Stock levels, adjustments, movement ledger | Done |
-| 9 | E4 | Stock transfers and reservations | Planned |
+| 9 | E4 | Stock transfers and reservations | Done |
 | 10 | E5 | Suppliers and supplier catalog | Planned |
 | 11 | E5 | Purchase orders and goods receipt | Planned |
 | 12 | E6 | Customers and sales orders with stock reservation | Planned |
