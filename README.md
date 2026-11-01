@@ -70,3 +70,7 @@ maps domain exceptions to a uniform `{status, message, details, timestamp}` erro
 - Reorder rules per (variant, warehouse) raise `LOW_STOCK` / `OUT_OF_STOCK` alerts when available stock falls to the
   reorder point, and resolve them automatically when stock recovers.
 - Every successful POST/PUT/PATCH/DELETE by an authenticated user is written to `audit_logs`.
+
+## Licence
+
+MIT, see [LICENSE](LICENSE).
